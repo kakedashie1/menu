@@ -1,6 +1,5 @@
 <?php
 
-require_once __DIR__ . '/../core/Controller.php';
 
 class MenuController extends Controller
 {

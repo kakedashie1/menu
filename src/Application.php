@@ -11,6 +11,7 @@ class Application
 
   public function __construct()
   {
+    session_start();
     $this->router = new Router($this->registerRoutes());
     $this->response = new Response();
     $this->request = new Request();
@@ -26,9 +27,9 @@ class Application
   }
 
   public function run()
-  {
-    try {
-      $params = $this->router->resolve($this->request->getPathInfo());
+{
+  try {
+    $params = $this->router->resolve($this->request->getPathInfo());
     if (!$params) {
       throw new HttpNotFoundException();
     }
@@ -36,13 +37,18 @@ class Application
     $controller = $params['controller'];
     $action = $params['action'];
     $this->runAction($controller, $action);
-    } catch (HttpNotFoundException) {
-      $this->render404Page();
-    }
-
-    $this->response->send();
-
+  } catch (ShuffleNotFoundException $e) {
+    $_SESSION['error'] = $e->getMessage();
+    header("Location: /");
+    exit;
+  } catch (HttpNotFoundException $e) {
+    $this->render404Page();
   }
+
+  $this->response->send();
+}
+
+
 
   public function getDatabaseManager()
   {

@@ -24,9 +24,14 @@ class ShuffleController extends Controller
       }
 
 
-      $main_dish = "";
-      $sub_dish = "";
-      $soup = "";
+
+      $main_dishes = $this->databaseManager->get('MainDishes')->fetchAllNames();
+      $sub_dishes = $this->databaseManager->get('SubDishes')->fetchAllNames();
+      $soups = $this->databaseManager->get('Soups')->fetchAllNames();
+
+      if (empty($main_dishes) || empty($sub_dishes) || empty($soups)) {
+        throw new ShuffleNotFoundException();
+      }
 
 
         $main_dishes = $this->databaseManager->get('MainDishes')->fetchAllNames();
@@ -43,6 +48,8 @@ class ShuffleController extends Controller
 
         shuffle($soups);
         $soup = $soups[0]['name'];
+
+        unset($_SESSION['error']);
 
         return $this->render([
           'main_dish' => $main_dish,

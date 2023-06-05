@@ -4,73 +4,87 @@
 class MenuController extends Controller
 {
 
-
   public function index()
   {
-    $mysqli = new mysqli('db', 'test_user', 'pass', 'test_database');
-if ($mysqli->connect_error) {
-  throw new RuntimeException('mysqli接続エラー: ' . $mysqli->connect_error);
-}
+   $main_dish = $this->databaseManager->get('MainDishes');
+   $main_dishes = $main_dish->fetchAllNames();
 
-$result = $mysqli->query('SELECT name FROM main_dishes');
-$main_dishes = $result->fetch_all(MYSQLI_ASSOC);
+   $sub_dish = $this->databaseManager->get('SubDishes');
+   $sub_dishes = $sub_dish->fetchAllNames();
 
-$result = $mysqli->query('SELECT name FROM sub_dishes');
-$sub_dishes = $result->fetch_all(MYSQLI_ASSOC);
+   $soup = $this->databaseManager->get('Soups');
+   $soups = $soup->fetchAllNames();
 
-$result = $mysqli->query('SELECT name FROM soups');
-$soups = $result->fetch_all(MYSQLI_ASSOC);
+    return $this->render([
+      'main_dishes' => $main_dishes,
+      'sub_dishes' => $sub_dishes,
+      'soups' => $soups,
+      'title' => '献立の登録',
+    ]);
 
-
-
-$mysqli->close();
-
-include __DIR__ . '/../views/menu.php';
 
   }
 
   public function create()
   {
-    $mysqli = new mysqli('db', 'test_user', 'pass', 'test_database');
-if ($mysqli->connect_error) {
-  throw new RuntimeException('mysqli接続エラー: ' . $mysqli->connect_error);
-}
+    if (!$this->request->isPost()) {
+      throw new HttpNotFoundException();
+    }
 
-$result = $mysqli->query('SELECT name FROM main_dishes');
-$main_dishes = $result->fetch_all(MYSQLI_ASSOC);
+    $main_dish = $this->databaseManager->get('MainDishes');
 
-$result = $mysqli->query('SELECT name FROM sub_dishes');
-$sub_dishes = $result->fetch_all(MYSQLI_ASSOC);
 
-$result = $mysqli->query('SELECT name FROM soups');
-$soups = $result->fetch_all(MYSQLI_ASSOC);
+    $sub_dish = $this->databaseManager->get('SubDishes');
+
+
+    $soup = $this->databaseManager->get('Soups');
+
+
+
+    $redirect = false;
 
 
   if (!empty($_POST['main_name'])) {
-    $stmt = $mysqli->prepare('INSERT INTO main_dishes (name) VALUES (?)');
-    $stmt->bind_param('s', $_POST['main_name']);
-    $stmt->execute();
-    header('Location: /menu');
+
+    $main_dish->insert($_POST['main_name']);
+
+
   }
 
   if (!empty($_POST['sub_name'])) {
-    $stmt = $mysqli->prepare('INSERT INTO sub_dishes (name) VALUES (?)');
-    $stmt->bind_param('s', $_POST['sub_name']);
-    $stmt->execute();
-    header('Location: /menu');
+
+    $sub_dish->insert($_POST['sub_name']);
+
+
+
+
   }
 
   if (!empty($_POST['soup_name'])) {
-    $stmt = $mysqli->prepare('INSERT INTO soups (name) VALUES (?)');
-    $stmt->bind_param('s', $_POST['soup_name']);
-    $stmt->execute();
-    header('Location: /menu');
+
+    $soup->insert($_POST['soup_name']);
+
+
   }
 
+  $main_dishes = $main_dish->fetchAllNames();
+  $sub_dishes = $sub_dish->fetchAllNames();
+  $soups = $soup->fetchAllNames();
 
-$mysqli->close();
 
-include __DIR__ . '/../views/menu.php';
+
+
+  header('Location: /menu');
+  exit;
+
+
+return $this->render([
+  'main_dishes' => $main_dishes,
+  'sub_dishes' => $sub_dishes,
+  'soups' => $soups,
+  'title' => '献立の登録',
+], 'index');
+
   }
 
 

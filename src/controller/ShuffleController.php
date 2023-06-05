@@ -7,47 +7,49 @@ class ShuffleController extends Controller
 
   public function index()
   {
-      $mysqli = new mysqli('db', 'test_user', 'pass', 'test_database');
-      if ($mysqli->connect_error) {
-        throw new RuntimeException('mysqli接続エラー: ' . $mysqli->connect_error);
-      }
 
-      $main_dish = "";
-      $sub_dish = "";
-      $soup = "";
+      return $this->render([
+        'main_dish' => "",
+        'sub_dish' => "",
+        'soup' => "",
+      ]);
 
 
-      include __DIR__ . '/../views/index.php';
   }
 
   public function create()
   {
-       $mysqli = new mysqli('db', 'test_user', 'pass', 'test_database');
-      if ($mysqli->connect_error) {
-        throw new RuntimeException('mysqli接続エラー: ' . $mysqli->connect_error);
+      if (!$this->request->isPost()) {
+        throw new HttpNotFoundException();
       }
+
 
       $main_dish = "";
       $sub_dish = "";
       $soup = "";
 
 
-        $result = $mysqli->query('SELECT name FROM main_dishes');
-        $main_dishes = $result->fetch_all(MYSQLI_ASSOC);
+        $main_dishes = $this->databaseManager->get('MainDishes')->fetchAllNames();
+
         shuffle($main_dishes);
         $main_dish = $main_dishes[0]['name'];
 
-        $result = $mysqli->query('SELECT name FROM sub_dishes');
-        $sub_dishes = $result->fetch_all(MYSQLI_ASSOC);
+        $sub_dishes = $this->databaseManager->get('SubDishes')->fetchAllNames();
+
         shuffle($sub_dishes);
         $sub_dish = $sub_dishes[0]['name'];
 
-        $result = $mysqli->query('SELECT name FROM soups');
-        $soups = $result->fetch_all(MYSQLI_ASSOC);
+        $soups = $this->databaseManager->get('Soups')->fetchAllNames();
+
         shuffle($soups);
         $soup = $soups[0]['name'];
 
+        return $this->render([
+          'main_dish' => $main_dish,
+          'sub_dish' => $sub_dish,
+          'soup' => $soup,
+        ], 'index');
 
-      include __DIR__ . '/../views/index.php';
+
   }
 }
